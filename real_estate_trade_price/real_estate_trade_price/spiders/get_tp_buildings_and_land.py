@@ -2,6 +2,7 @@ import datetime
 import math
 import random
 from decimal import Decimal
+from typing import List
 
 import scrapy
 from selenium import webdriver
@@ -104,7 +105,7 @@ class GetTpBuildingsAndLandSpider(scrapy.Spider):
         self.driver.execute_script(f"document.getElementById('{trade_end_year_id}').value='{year}';")
         self.driver.execute_script(f"document.getElementById('{trade_end_month_id}').value='{str(month).zfill(2)}';")
 
-    def _list_to_item(self, table_td_list: list[WebElement], district_name: str) -> RealEstateTradePriceItem:
+    def _list_to_item(self, table_td_list: List[WebElement], district_name: str) -> RealEstateTradePriceItem:
         item = RealEstateTradePriceItem()
         item['district'] = district_name
         addr = self._to_exact_addr(table_td_list[2].text)
@@ -181,7 +182,7 @@ class GetTpBuildingsAndLandSpider(scrapy.Spider):
                 except NameError:
                     return text
 
-    def _get_more_info(self) -> list[str]:
+    def _get_more_info(self) -> List[str]:
         output = []
         handles_before = self.driver.window_handles
         self.wait.until(lambda driver: len(handles_before) != len(self.driver.window_handles))
