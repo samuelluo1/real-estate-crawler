@@ -31,6 +31,7 @@ else:
     start_month_default = end_month_default - 2
 start_district_no_default = 0
 end_district_no_default = 11
+district_list = ['松山', '大安', '中正', '萬華', '大同', '中山', '文山', '南港', '內湖', '士林', '北投', '信義']
 
 search_btn_id = 'ContentPlaceHolder1_ContentPlaceHolder1_TruePriceSearch1_btn_Search'  # id of 查詢 button
 table_id = 'ContentPlaceHolder1_ContentPlaceHolder1_gvTruePrice_A_gv_TruePrice'  # id of table
@@ -79,7 +80,7 @@ class GetTpBuildingsAndLandSpider(scrapy.Spider):
                     self.driver.execute_script('arguments[0].click();', self.wait.until(EC.element_to_be_clickable((By.ID, search_btn_id))))
 
                     self.wait.until(EC.visibility_of_element_located((By.ID, table_id)))
-                    district_name = self.driver.find_element(By.CSS_SELECTOR, f"#{choose_district_id}{district_no} ~ label").text + '區'
+                    district_name = district_list[district_no] + '區'
                     self.wait.until(EC.text_to_be_present_in_element((By.CSS_SELECTOR, f"#{table_id} > tbody > tr:nth-child(3) > td:nth-child(2)"), district_name))
 
                     total_rows = int(driver.find_element(By.ID, total_rows_id).text)
