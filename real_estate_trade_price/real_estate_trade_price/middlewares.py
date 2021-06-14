@@ -2,7 +2,7 @@
 #
 # See documentation in:
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
-import math
+from math import radians, sin, cos, asin, sqrt
 from typing import Tuple
 
 import MySQLdb
@@ -80,24 +80,26 @@ class RealEstateTradePriceSpiderMiddleware:
         driver = webdriver.Chrome(chrome_options=chrome_options)
         url = requote_uri(f"https://map.tgos.tw/TGOSimpleViewer/Web/Map/TGOSimpleViewer_Map.aspx?addr={addr}")
         driver.get(url)
+
         try:
             WebDriverWait(driver, 30, 0.01).until(lambda url_change: driver.current_url != url)
-        except TimeoutException:
+            info = driver.current_url
+            building_lon = float(info[info.index('CX=') + 3:info.index('CY=') - 1])
+            building_lat = float(info[info.index('CY=') + 3:info.index('L=') - 1])
+        except (TimeoutException, ValueError):
             driver.close()
             return -1.0, -1.0
 
-        info = driver.current_url
         driver.close()
-        building_lon = float(info[info.find('CX=') + 3:info.find('CY=') - 1])
-        building_lat = float(info[info.find('CY=') + 3:info.find('L=') - 1])
         return building_lon, building_lat
 
     def _get_dist_to_mrt(self, lon: float, lat: float) -> Tuple[float, float]:
         shortest_distance = float('inf')
+        shortest_exit_id = -1
         for row in self.mrt_exit_coordinate:
-            lon1, lat1, lon2, lat2 = map(math.radians, [lon, lat, row[1], row[2]])
-            a = math.sin((lat2 - lat1) / 2) ** 2 + math.cos(lat1) * math.cos(lat2) * math.sin((lon2 - lon1) / 2) ** 2
-            c = 2 * math.asin(math.sqrt(a))
+            lon1, lat1, lon2, lat2 = map(radians, [lon, lat, row[1], row[2]])
+            a = sin((lat2 - lat1) / 2) ** 2 + cos(lat1) * cos(lat2) * sin((lon2 - lon1) / 2) ** 2
+            c = 2 * asin(sqrt(a))
             r = 6371
             distance = c * r * 1000
             if distance < shortest_distance:
